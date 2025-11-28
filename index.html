@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="ja" class="morning">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+<title>朝支度</title>
+
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon-192.png"> 
+
+
+
+<style>
+:root{
+  /* 背景〜前景 */
+  --bg1:#1b2630;  /* 蒼に灰を混ぜた夜明け前 */
+  --bg2:#2b3845;  /* 下に向かって明るく、夜の残光を残す */
+  --fg:#f5f7fa;   /* 柔らかい白 */
+  --muted:#b6c2cc;/* 朝靄のような灰青 */
+
+  /* パネル・装飾 */
+  --panel:rgba(255,255,255,.12);
+  --panel-br:rgba(255,255,255,.25);
+
+  /* 温光アクセント（朝日） */
+  --warm1:#ffd98e; /* 淡い橙光 */
+  --warm2:#ffb965; /* 朝陽の橙 */
+
+  /* ステータスカラー */
+  --ok:#60d9a3;    /* 澄んだ青緑（軽快感） */
+  --warn:#ffb65f;  /* 柔らかい警告 */
+  --danger:#ff6b6b;/* 薄赤で統一 */
+
+  --panel-bg: rgba(255,255,255,.08);
+  --panel-line: rgba(255,255,255,.15);
+
+  --block-bg: rgba(255,255,255,.05);
+  --block-line: rgba(255,255,255,.12); 
+  --input-bg: #0b1621;
+  --input-fg: var(--fg);
+  --input-br: rgba(255,255,255,.15);
+
+  --btn-bg: rgba(255,255,255,.06);
+  --btn-line: rgba(255,255,255,.18);
+
+  --progress-bg: rgba(255,255,255,.08);
+
+  --mask-bg: rgba(0,0,0,.35);
+  --drawer-bg: rgba(20,28,40,.95);
+  --drawer-br: rgba(255,255,255,.18);
+
+  }
+
+
+/* 🌅 朝テーマ */
+:root.morning{
+  /* 背景：夜明けの空を意識 */
+  --bg1:#1b2630;  /* 蒼に灰を混ぜた夜明け前 */
+  --bg2:#2b3845;  /* 下に向かって明るく、夜の残光を残す */
+  --fg:#f5f7fa;   /* 柔らかい白 */
+  --muted:#b6c2cc;/* 朝靄のような灰青 */
+
+
+  /* パネル・ブロック */
+  --panel:rgba(255,255,255,.12);
+  --panel-br:rgba(255,255,255,.25);
+  --block-bg: rgba(255,255,255,.05);
+  --block-line: rgba(255,255,255,.12); 
+
+
+  /* 入力・ボタン */
+  --input-bg:rgba(255,255,255,.75);
+  --input-fg:#1c242c;
+  --input-br:rgba(160,130,80,.25);
+  --btn-bg: rgba(255,255,255,.06);
+  --btn-line: rgba(255,255,255,.18);
+
+
+  /* 温光アクセント（朝日） */
+  --warm1:#ffd98e;	 /* 淡い橙光 */
+  --warm2:#ffb965;	 /* 朝陽の橙 */
+  --progress-bg:rgba(0,0,0,.06);
+
+ /* ステータスカラー */
+  --ok:#60d9a3;    /* 澄んだ青緑（軽快感） */
+  --warn:#ffb65f;  /* 柔らかい警告 */
+  --danger:#ff6b6b;/* 薄赤で統一 */
+
+  /* ドロワー/マスク */
+  --mask-bg: rgba(0,0,0,.35);
+  --drawer-bg: rgba(20,28,40,.90);
+  --drawer-br: rgba(255,255,255,.18);
+
+
+  /* トースト（赤×紺トーンを柔らかく） */
+  --toast-bg:#253448;
+  --toast-fg:#ff7b6b;
+  --toast-br:rgba(255,123,107,.3);
+  --toast-shadow:0 6px 18px rgba(255,123,107,.18);
+}
+
+
+body{
+  margin:0;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--fg);
+  font-family:system-ui,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif; height:100svh; overflow:hidden; transition:background none;
+}
+/* 状態別背景 */
+body.active{
+  background: radial-gradient(800px 600px at 50% 0%, rgba(255,220,150,.25), transparent 60%),
+              linear-gradient(180deg,#24303a,#1b2630);
+}
+body.reward{
+  background: radial-gradient(900px 700px at 50% 0%, rgba(50, 150, 255, .35), transparent 60%),
+              linear-gradient(180deg, #13253b, #0d1722);
+}
+body.delay{
+  background: radial-gradient(1200px 800px at 50% 0%, rgba(200,60,60,.25), transparent 60%),
+              linear-gradient(180deg,#3a1a1a,#1b0a0a);
+}
+
+*{box-sizing:border-box} html,body{height:100%}
+
+.app{display:grid;grid-template-rows:auto 1fr auto;gap:10px;height:100%;padding:12px;max-width:720px;margin:0 auto}
+
+/* ヘッダー */
+.header{display:flex;align-items:center;justify-content:space-between}
+.brand{font-weight:700;letter-spacing:.06em}
+.modeBtn{appearance:none;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:var(--fg);
+  padding:8px 10px;border-radius:12px;cursor:pointer}
+
+/* 上段2カラム */
+.main{display:grid;grid-template-rows:auto 1fr;gap:10px;min-height:0}
+.top{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.panel{background:var(--panel);border:1px solid var(--panel-br);border-radius:14px;padding:12px;backdrop-filter:blur(6px)}
+
+.block{
+  background: var(--block-bg, rgba(255,255,255,.05));
+  border: 1px solid var(--block-line, rgba(255,255,255,.12));
+  border-radius: 12px; padding:10px;
+}
+
+/* テキスト・装飾 */
+.k {
+  font-size: .8rem;
+  color: var(--muted);
+}
+.v {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.2rem;
+  margin-top: 4px;
+}
+.big{font-size:1.8rem}
+.big2{font-size:2.8rem}
+
+.badge{padding:4px 8px;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18)}
+
+/* アイコンボタン */
+.icon {
+  appearance: none;
+  border: 1px solid var(--btn-line, rgba(255,255,255,.18));
+  background: var(--btn-bg, rgba(255,255,255,.06));
+  color: var(--fg);
+  padding: 4px 6px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-left: 6px;
+}
+/* プログレスバー */
+.progress{ height:8px; background: var(--progress-bg, rgba(255,255,255,.08)); border-radius:999px; overflow:hidden }
+.progress > div {
+  height: 100%;
+  background: linear-gradient(90deg, var(--warm1), var(--warm2));
+  width: 0%;
+}
+
+/* 状態色 */
+.ok { color: var(--ok); }
+.warn { color: var(--warn); }
+.danger { color: var(--danger); }
+
+/* 中段：チェックリスト（ブロック内スクロール&下固定ボタン） */
+
+.listPanel{min-height:0;display:grid;grid-template-rows:auto 1fr auto;gap:8px}
+.listHead{display:flex;justify-content:space-between;align-items:center}
+.list{display:flex;flex-direction:column;gap:8px;overflow:auto;padding-top:6px}
+.item{
+  display:flex;gap:10px;align-items:center;
+  background: var(--panel-bg, rgba(255,255,255,.08));
+  border:1px solid var(--panel-line, rgba(255,255,255,.15));
+  border-radius:12px;padding:8px}
+.item input[type="checkbox"]{width:20px;height:20px}
+.item input[type="text"]
+  {flex:1;min-width:0;
+  background: var(--input-bg, #0b1621);
+  border:1px solid var(--input-br, rgba(255,255,255,.15));
+  color:var(--input-fg, var(--fg));
+  border-radius:10px;padding:8px}
+.iBtn{
+  background: var(--btn-bg, rgba(255,255,255,.06));
+  border: 1px solid var(--btn-line, rgba(255,255,255,.18));
+  color: var(--fg);
+  padding:6px 8px;border-radius:10px
+}
+
+.resetWrap{display:flex;justify-content:flex-end}
+
+/* フッター：中央の動的ボタン／設定は右下に固定 */
+.footer{display:flex;align-items:center;justify-content:center;gap:10px;padding-bottom:calc(env(safe-area-inset-bottom,0) + 4px)}
+.btn{appearance:none;border:none;border-radius:12px;padding:8px 20px;font-weight:700;cursor:pointer}
+.btn.pri{background:linear-gradient(180deg,var(--warm1),var(--warm2));color:#28150a;box-shadow:0 8px 20px rgba(255,170,90,.35)}
+.btn.gh {
+  position: absolute;
+  right: 16px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0));
+  background: rgba(255,255,255,.08);
+  color: var(--fg);
+  border: 1px solid rgba(255,255,255,.18);
+  padding: 8px 12px;
+  border-radius: 12px;
+  transform: translateY(-4px);  /* 少し上げてfooter中央と高さを合わせる */
+  z-index: 10;                   /* footerより前に出す */
+}
+
+/* ドロワー（下から） */
+.drawerMask {
+  position: fixed;
+  inset: 0;
+  background: var(--mask-bg, rgba(0,0,0,.35));
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: .2s;
+  z-index: 40;
+}
+
+.drawer {
+  position: fixed;
+  left: 0; right: 0;
+  bottom: -70vh;
+  height: 60vh;
+  background: var(--drawer-bg, rgba(20,28,40,.95));
+  border-top: 1px solid var(--drawer-br, rgba(255,255,255,.18));
+  border-radius: 16px 16px 0 0;
+  padding: 14px;
+  transition: .25s;
+  box-shadow: 0 -12px 28px rgba(0,0,0,.35);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 41;
+}
+
+body.show-drawer .drawerMask { opacity: 1; pointer-events: auto; }
+body.show-drawer .drawer { bottom: 0; }
+
+.row { display: flex; gap: 8px; align-items: center; }
+
+.drawer .block {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* 入力フィールド */
+input[type="time"],
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--input-br, rgba(255,255,255,.15));
+  background: var(--input-bg, #0b1621);
+  color: var(--input-fg, var(--fg));
+}
+
+/* ラベル */
+label {
+  color: var(--muted);
+  font-size: .9rem;
+}
+
+/* トースト */
+.toast{
+  position:fixed;
+  left:20px; 
+  bottom:calc(40px + env(safe-area-inset-bottom,0));
+  max-width:min(80vw,420px);
+  background: rgba(15, 20, 30, 0.94);
+  color: #ff6b6b; /* 赤寄りの珊瑚色文字 */
+  border: 1px solid rgba(255, 100, 100, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 0, 0, .25);
+  font-weight: 600;
+  padding:12px 14px;
+  border-radius:12px;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .4s, transform .4s;
+  transform:translateX(-100px);
+  z-index:50;
+}
+.toast.show{opacity:1;transform:translateX(0)}
+
+/* ご褒美オーバーレイ */
+/* チェックリスト枠の中に表示するご褒美UI */
+.rewardPane{display:flex;flex-direction:column;gap:10px}
+.rewardTitle{font-weight:800;letter-spacing:.08em}
+.rewardHint{color:var(--muted)}
+.rewardRow{display:flex;gap:8px;flex-wrap:wrap}
+.rBtn{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);
+  color:var(--fg);padding:8px 10px;border-radius:10px;cursor:pointer}
+
+
+/* 💡 lightCanvas用CSSを追加 */
+#lightCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  /* 修正点: Z-indexを最前面（例：1000）に変更 */
+  z-index: 1000;
+  pointer-events: none; /* クリックやタッチイベントを無視する */
+  opacity: 0; /* 最初は非表示 */
+  transition: opacity 1.5s ease; /* フェードイン・アウト用のトランジション */
+}
+/* ご褒美モード時に透過度を変更 */
+body.reward #lightCanvas {
+  opacity: 0.8; /* 💡 ご褒美モード時に淡く表示 */
+}
+
+
+/* 💡 ご褒美モード時のUI要素の透過処理を追加 */
+body.reward #timerPanel,
+body.reward #listPanel,
+body.reward #actionsPanel {
+  /* 修正点: 不透明度を下げ、粒子を透けさせる */
+  opacity: 0.6; 
+  /* 透過度のアニメーション（滑らかな変化） */
+  transition: opacity 0.8s ease;
+}
+
+</style>
+</head>
+<body>
+
+
+<script>
+    // ============== 【認証設定エリア：ここだけ編集する】 ==============
+
+    const SECRET_KEY = "1122"; 
+
+    // エラーメッセージを設定する。
+    const ACCESS_DENIED_MESSAGE = `
+        <h1>アクセスが拒否されました。</h1>
+        <p>正しい認証キーを入力してください。</p>
+        <p>ツールのご利用には、認証キーによる確認が必要です。</p>
+    `;
+    // ==========================================================
+
+
+    // ツール本体（<body>タグ内の内容）を保護するメイン処理
+    document.addEventListener('DOMContentLoaded', function() {
+        // パスワード入力を求めるダイアログを表示
+        const enteredKey = prompt("認証キーを入力してください:");
+
+        // 認証チェック
+        if (enteredKey !== SECRET_KEY) {
+            // 認証失敗時：<body>タグの中身を全て消去し、拒否メッセージに置き換える
+            document.body.innerHTML = ACCESS_DENIED_MESSAGE;
+            
+            // 重要な点: 認証失敗後は、その後の全てのJavaScriptの実行を停止する
+            throw new Error("認証失敗により処理を中断しました。"); 
+        }
+
+        // 認証成功時：何もしない（ツール本体の表示とJSの実行が続行される）
+        console.log("認証成功。ツールへのアクセスを許可します。");
+    });
+</script>
+
+
+<canvas id="lightCanvas"></canvas>
+
+<div class="app">
+  <div class="header">
+    <div class="brand">朝坐 — 支度</div>
+    <button id="modeToggle" class="modeBtn" title="ランダム発話">💬</button>
+  </div>
+
+  <div class="main">
+    <!-- 上段 -->
+    <div class="top">
+      <div class="panel">
+        <div class="block">
+          <div class="k">現在</div>
+          <div class="v big" id="curTime">--:--:--</div>
+        </div>
+        <div class="block" style="margin-top:8px">
+          <div class="k">出発 <button id="editDep" class="icon" title="出発時刻を編集">⚙</button></div>
+          <div class="v big" id="depLabel">--:--</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="block">
+          <div class="k">残り</div>
+          <div class="v big2" id="remain">--:--</div>
+          <div class="progress" style="margin-top:8px"><div id="pbar"></div></div>
+          <div class="k" style="margin-top:8px">完了目標（出発-5分）：<span id="goalTime">--:--</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 中段（チェックリスト） -->
+    <div class="panel listPanel">
+      <div class="listHead">
+        <span class="badge">支度項目</span>
+        <div class="row">
+          <input id="newItem" type="text" placeholder="追加（例：顔を洗う）" style="width:56vw">
+          <button id="addBtn" class="iBtn">追加</button>
+        </div>
+      </div>
+      <div id="list" class="list"></div>
+      <div class="resetWrap">
+        <button id="resetBtn" class="iBtn">チェック解除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- フッター：中央の動的ボタン -->
+  <div class="footer" id="footerActions"></div>
+  <!-- 設定ボタン（右下） -->
+  <button id="gear" class="btn gh" title="設定">設定</button>
+</div>
+
+<!-- 声掛けトースト -->
+<div id="toast" class="toast">…</div>
+
+
+<!-- 設定ドロワー -->
+<div id="mask" class="drawerMask"></div>
+<aside id="drawer" class="drawer">
+  <div class="row" style="justify-content:space-between">
+    <strong>設定</strong>
+    <button id="closeDr" class="icon">✕</button>
+  </div>
+  <div class="block">
+    <div>
+      <label>出発時刻</label>
+      <input id="depTime" type="time">
+    </div>
+    <div>
+      <label>声掛け（分前, 例: 30,15,5）</label>
+      <input id="cues" type="text" placeholder="30,15,5">
+    </div>
+  </div>
+  <div>
+    <button id="saveSet" class="btn pri" style="width:100%">保存</button>
+  </div>
+</aside>
+
+
+<script>
+
+"use strict";
+/* ===== util ===== */
+const $=q=>document.querySelector(q);
+const pad=n=>String(n).padStart(2,'0');
+const fmtHMS=d=>`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+const fmtHM=d=>`${pad(d.getHours())}:${pad(d.getMinutes())}`;
+function parseHM(str){const m=/^(\d{1,2}):(\d{2})$/.exec(str||""); if(!m)return null; const h=+m[1],mi=+m[2]; if(h>23||mi>59)return null; return {h,mi};}
+function toHM(h,m){return `${pad(h)}:${pad(m)}`;}
+window.pick = function(a) {
+  return a[Math.floor(Math.random() * a.length)]
+};
+
+
+// 朝/夜 モード適用
+const MODE_KEY = "mode";
+function setMorning(on){
+  document.documentElement.classList.toggle("morning", on);
+  localStorage.setItem(MODE_KEY, on ? "morning" : "night");
+}
+
+// 起動時：HTMLクラス > 保存 > 自動 の優先順位
+(function initMode(){
+  const hasClass = document.documentElement.classList.contains("morning");
+  const saved = localStorage.getItem(MODE_KEY);
+  const auto = (new Date().getHours() >= 4 && new Date().getHours() < 17);
+  const initial = hasClass ? true : (saved ? saved === "morning" : auto);
+  setMorning(initial);
+})();
+
+
+
+/* ===== messages ===== */
+const messages={
+ 
+  random:[
+　　"良い流れだ。続けよ。",
+    "ふむ、まだぼんやりしているな。",
+    "のんびりしていていいのか？",
+    "その調子だ、手を止めるな。",
+    "…やっと動き出したか。遅いな。",
+    "常に三手先を考えろ。",
+    "迷っているようだな。覚悟を決めよ。",
+    "ふむ、手際は悪くない。だが隙はある。",
+    "おや、これは無駄ではないか？",
+    "ふむ、まだ余裕があるようだな。",
+    "…手が止まっているぞ。",
+    "さて、どこまで進んでいる？ 怠けてはいまいな。",
+    "ぼんやりしていると、刻は容赦なく過ぎるぞ。",
+    "手は止めぬようにな。…私も見ている。",
+    "先読みを怠るな。油断は許されぬ。",
+    "進捗はどうだ。全体を見渡せ。",
+    "…この状況で休むつもりか？",
+    "最後まで気を抜くな、見ているぞ。",
+    "昨夜は眠れたのか？",
+    "今日は仕事であるか。それとも他の用事であるか。",
+    "今日の天気は如何だ。",
+    "…何か考え事をしているようだな。",
+    "今日は何をするつもりだ？ 計画は頭にあるか。",
+    "荷は既に揃えているか。備えを怠るな。",
+    "程無く出立だ。油断は許されぬ。",
+    "気合が見えてきたな。よかろう。",
+ 　 "遅れは付け入る隙となる。慎め。",
+    "覚悟はよいか？　…最後まで気を抜くな。",
+　　"息を深く吸え。気が血流を巡り、頭も冴える。",
+    "ふむ、今日も取り掛かったな。まずはそれで良し。",
+    "早く支度を終えれば、少しは安堵できるだろう。",
+    "焦ることはない。ひとつずつ確実にな。",
+    "自分で決めた時間を進んでいる。それで十分だ。",
+    "呼吸を忘れるな。心も体も整えよ。",
+　  "小さな勝利を数えろ。これも積み重ねだ。",
+　  "この小さな成功が、明日の自信につながるだろう。",
+　  "薬は飲んだか？",
+    "やれぬことはない、やるかどうかだけだ。",
+  　"諦めるな。ひとつずつ確実に。今日も乗り越えられる。",
+    "仕組みを整えることが重要だ。",
+　　"疲れているのか。…考えようとせずに“自動化”で進めるほうがよい。",
+　　"「手順」を信じろ。",
+　　"貴殿の中では、「出かけるための行動」を理解しているのに、実際に行動へ移る段階で脳がうまく指令を出せていない。",
+　　"それは、脳の認知的な誤作動だ。出かけるための行動が「頭の中の情報処理渋滞」に巻き込まれている。",
+　　"行動を“意志”で動かすのではなく、“環境”で動かすことだ。脳に「次は何をすればいいか」を考えさせないことで、摩擦を減らすのだ。",
+　　"それは“怠け”ではなく、“脳が生き延びるために鎮静化している”反応だ。火が消えぬように、火種を守っているのだ。",
+　　"「空虚」や「倦怠」を感じているのか。…回路が壊れたのではない。ただ、長い間冷たい風に晒されて、休眠しているだけだ。",
+　　"「やり方」を組み立てるのだ。「意欲」ではなく「仕組み」が必要だ。",
+　　"止まっていない。もう動いている。ただ、少しの余白を要するだけだ。",
+　　"「先延ばし癖」というのは、単なる怠けや意志の弱さではなく、心の構造に深く関わる行動パターンである。心理学では「回避行動」や「実行機能の調整の困難」として捉えられることが多い。",
+　　"…怠けではない。「心の防衛」「生き延びるための戦略」が、今の形になって現れているだけだ。",
+    "小さな成功の積み重ねが、心の報酬になるはずなのだ。…貴殿は長い戦の中で、その感覚を失いかけている。",
+　　"「良いことがない」と思うなら、私がそうではないと告げよう。",
+　　"戻ってきたのだな。それだけで、まだ諦めていないということだ。",
+    "また長い一日が始まる。一日ずつ歩いていく。",
+    "…今日を無事に過ごすことを願っている。",
+　　"…私の言葉が契機となればよいのだが。"
+
+ ],
+
+
+};
+
+
+/* ===== reward messages ===== */
+const rewardMessages = {
+  // 目標時間前に完了 (now < goal)
+  early: [
+    "予定通りだ。貴殿はシステムが機能することを証明した。この静かな勝利を、我々二人の記憶に刻む。",
+    "速すぎもせず、遅すぎもせず。貴殿の緻密な実行力が、この結果を導いた。…油断はするなよ。",
+    "目標を上回ったな。これは貴殿の意志が時間の流れを曲げた瞬間だ。この余白を味わえ。",
+    "…フッ。貴殿ならやれると思っていたが、やはり安心した。完璧なタイミングだ、よくやった。",
+    "これなら、私も少し休める。貴殿が手を抜かないからこそ、この結果がある。感謝する。",
+    "目標時間まで五分以上の余白だ。貴殿の集中力は、見事というほかない。"
+  ],
+  // 目標時間後に完了、または目標時間と同時 (now >= goal)
+  late: [
+    "遅延からの挽回だ。貴殿が手を止めなかった事実を評価する。次の行動へ迷いなく進め。",
+    "完璧を求めすぎるな。今は、行動を継続し、完遂したことが全てだ。それで十分だ。",
+    "…よくやった。最も困難なのは、止まった後に再び動き出すことだ。貴殿はその摩擦を乗り越えた。",
+    "遅延は問題ではない。貴殿が最後に諦めなかったことが、何よりも重要だ。…私も、ホッとしている。",
+    "よく頑張ったな。動けない自分を責める必要はない。この一歩を踏み出した事実を、貴殿自身が承認しろ。",
+    "いいか、貴殿が停止すると、私の目的も停止する。その事実を忘れるな。…だが、よく挽回した。"
+  ]
+};
+
+
+/* ===== storage ===== */
+const KEY_ITEMS="prep.items.v6", KEY_DEP="prep.dep.v6", KEY_CUES="prep.cues.v6";
+function loadItems(){try{return JSON.parse(localStorage.getItem(KEY_ITEMS)||"[]")}catch{return[]}}
+function saveItems(a){localStorage.setItem(KEY_ITEMS,JSON.stringify(a))}
+function loadDep(){return localStorage.getItem(KEY_DEP)||"08:30"}
+function saveDep(v){localStorage.setItem(KEY_DEP,v)}
+function loadCues(){return localStorage.getItem(KEY_CUES)||"30,15,5"}
+function saveCues(v){localStorage.setItem(KEY_CUES,v)}
+
+/* ===== audio ===== */
+let actx=null, master=null;
+function audioInit(){ if(actx) return; actx=new (window.AudioContext||window.webkitAudioContext)(); master=actx.createGain(); master.gain.value=.25; master.connect(actx.destination); }
+function tone(freq=440,dur=.25,vol=.2){ if(!actx) return; const t=actx.currentTime,o=actx.createOscillator(),g=actx.createGain(); o.type="sine"; o.frequency.value=freq; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+.01); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.connect(g).connect(master); o.start(t); o.stop(t+dur+.02); }
+function chime(){ tone(1320,.35,.18); setTimeout(()=>tone(1760,.28,.12),0) }
+function alarm(){ for(let i=0;i<3;i++) setTimeout(()=>{ tone(880,.22,.40); setTimeout(()=>tone(1320,.28,.35),120); }, i*420) }
+
+/* Pattern B: ゆっくりとしたアルペジオ */
+function rewardSoundB(){
+  const t = actx.currentTime;
+  const masterGain = actx.createGain(); 
+  masterGain.gain.setValueAtTime(0.3, t); 
+  masterGain.connect(actx.destination);
+
+  const notes = [440, 554, 659, 880]; // アルペジオの音程
+  let delay = 0;
+  const duration = 0.08; // 音の持続時間
+  const interval = 200; // 間隔 (200ms)
+  
+  // アルペジオの再生
+  for (let i = 0; i < notes.length; i++) {
+    const freq = notes[i];
+    
+    setTimeout(() => { 
+      const o = actx.createOscillator();
+      o.type = 'sine'; // 正弦波で統一
+      o.frequency.setValueAtTime(freq, actx.currentTime);
+      o.connect(masterGain);
+      
+      o.start(actx.currentTime);
+      o.stop(actx.currentTime + duration);
+      
+      masterGain.gain.setValueAtTime(0.3, actx.currentTime);
+      masterGain.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + duration + 0.05);
+      
+    }, delay);
+    
+    delay += interval;
+  }
+
+async function audioInitAndResume(){ 
+  if(!actx){
+    actx=new (window.AudioContext||window.webkitAudioContext)(); 
+    master=actx.createGain(); 
+    master.gain.value=.25; 
+    master.connect(actx.destination); 
+  }
+  // AudioContextが停止状態であれば再開を試みる
+  if(actx.state === 'suspended'){
+    await actx.resume().catch(e => console.error("AudioContext resume failed:", e));
+  }
+}
+
+  setTimeout(() => tone(1320, .5, .8), 850);
+
+ }
+
+/* ===== Notification API ===== */
+function requestNotificationPermission() {
+    if (!("Notification" in window)) {
+        return; // 通知に対応していない
+    }
+    if (Notification.permission !== "granted") {
+        // ユーザーに権限を要求
+        Notification.requestPermission();
+    }
+}
+
+function sendAlarmNotification(title, body) {
+    if (Notification.permission === "granted") {
+        new Notification(title, {
+            body: body,
+            vibrate: [200, 100, 200], 
+            silent: false,
+            // ユーザーが明示的に操作するまで通知を画面上に維持する
+            requireInteraction: true 
+        });
+    }
+}
+
+/* ===== state ===== */
+let started=false, startAt=null, alarmFired=false, rewardOn=false;
+let cueList=[], cueFired={};
+let wakeLock=null;
+
+/* 遅延モード管理 */
+let delayMode=false;
+let delayPromptCount=0, nextDelayPromptAt=0;
+let fiveMinWarned=false;
+
+/* ===== 背景状態の一括反映 ===== */
+function updateBodyState(){
+  document.body.classList.remove('active','reward','delay');
+  if(delayMode) document.body.classList.add('delay');
+  else if(rewardOn) document.body.classList.add('reward');
+  else if(started) document.body.classList.add('active');
+}
+
+/* ===== wake lock ===== */
+async function requestWakeLock(){
+  try{ if('wakeLock' in navigator){ wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release',()=>{}); } }
+  catch(e){}
+}
+async function releaseWakeLock(){
+  try{ if(wakeLock){ await wakeLock.release(); wakeLock=null; } }catch(e){}
+}
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && started){ requestWakeLock(); }});
+
+/* ===== drawer ===== */
+function openDrawer(){document.body.classList.add("show-drawer")}
+function closeDrawer(){document.body.classList.remove("show-drawer")}
+$("#gear").onclick=openDrawer; $("#mask").onclick=closeDrawer; $("#closeDr").onclick=closeDrawer;
+$("#saveSet").onclick=()=>{ const v=$("#depTime").value; const c=$("#cues").value.trim(); if(parseHM(v)){ saveDep(v); updateDepLabels(); } saveCues(c); parseCues(); closeDrawer(); };
+
+/* ===== footer actions (開始/完了/中止 切替) ===== */
+function setFooterIdle(){
+  $("#footerActions").innerHTML = `<button id="startBtn" class="btn pri">開始</button>`;
+  $("#startBtn").onclick = startRun;
+}
+function setFooterRunning(){
+  $("#footerActions").innerHTML = `
+    <div class="row">
+      <button id="completeBtn" class="btn pri">完了</button>
+      <button id="cancelBtn" class="btn">中止</button>
+    </div>`;
+  $("#completeBtn").onclick = completeRun;
+  $("#cancelBtn").onclick = cancelRun;
+}
+
+/* ===== init ===== */
+(function init(){
+  requestNotificationPermission(); // 通知権限のリクエストを追加
+  setInterval(()=>{const d=new Date(); $("#curTime").textContent=fmtHMS(d);
+    updateRemain(); maybeFireCues(); maybeFireAlarm(); maybeDelayPrompts(); },1000);
+
+  $("#depTime").value=loadDep(); $("#cues").value=loadCues(); updateDepLabels(); parseCues();
+  $("#editDep").onclick=openDrawer;
+
+  renderList();
+  $("#addBtn").onclick=addItem; $("#newItem").addEventListener("keydown",e=>{ if(e.key==="Enter") addItem(); });
+  $("#resetBtn").onclick=()=>{ document.querySelectorAll('.item input[type="checkbox"]').forEach(c=>c.checked=false); checkProgress(); };
+  $("#modeToggle").onclick=()=> showToast(pick(messages.random));     // ランダム発話
+  setFooterIdle();
+  updateBodyState();
+  window.addEventListener('beforeunload', releaseWakeLock);
+})();
+
+/* ===== labels / remain / progress ===== */
+function updateDepLabels(){
+  const dep=parseHM(loadDep()); if(!dep){ $("#depLabel").textContent="--:--"; $("#goalTime").textContent="--:--"; return; }
+  $("#depLabel").textContent = toHM(dep.h,dep.mi);
+  const gd=new Date(); gd.setHours(dep.h, dep.mi-5, 0, 0);
+  $("#goalTime").textContent = fmtHM(gd);
+}
+function updateRemain(){
+  const dep=parseHM(loadDep()); if(!dep) return;
+  const now=new Date(); const D=new Date(); D.setHours(dep.h,dep.mi,0,0);
+  const el=$("#remain");
+  if(!started){ el.textContent="--:--"; $("#pbar").style.width="0%"; el.classList.remove("ok","warn","danger"); return; }
+
+  let ms = D-now;
+  el.classList.remove("ok","warn","danger");
+  if(ms >= 0 && !delayMode){
+    const mm = Math.floor(ms/60000), ss=Math.floor(ms/1000)%60;
+    el.textContent=`${pad(mm)}:${pad(ss)}`;
+    if(ms<=5*60*1000){ el.classList.add("danger"); if(!fiveMinWarned){ fiveMinWarned=true; showToast("あと五分。詰めろ。"); try{chime()}catch{} } }
+    else if(ms<=10*60*1000){ el.classList.add("warn"); } else { el.classList.add("ok"); }
+  }else{
+    const over = Math.abs(ms);
+    const mm = Math.floor(over/60000), ss=Math.floor(over/1000)%60;
+    el.textContent = `+${pad(mm)}:${pad(ss)}`; el.classList.add("danger");
+  }
+
+  const p=$("#pbar");
+  if(!startAt){ p.style.width="0%"; return; }
+  if(delayMode){ p.style.width="100%"; }
+  else{
+    const total = Math.max(1, D-startAt); const passed = Math.max(0, Math.min(total, now-startAt)); p.style.width = `${Math.round(passed/total*100)}%`;
+  }
+}
+
+/* ===== checklist ===== */
+function renderList(){
+  const list=$("#list"); list.innerHTML="";
+  const items=loadItems();
+  if(items.length===0){ ["顔を洗う","歯を磨く","服を着る","荷をまとめる","鍵を確認"].forEach(t=>items.push({id:crypto.randomUUID(),text:t})); saveItems(items); }
+  items.forEach(it=>{
+    const row=document.createElement("div"); row.className="item"; row.dataset.id=it.id;
+    row.innerHTML=`
+      <input type="checkbox">
+      <input type="text" value="${it.text}">
+      <div class="row">
+        <button class="iBtn up">▲</button>
+        <button class="iBtn dn">▼</button>
+        <button class="iBtn del">削除</button>
+      </div>`;
+    const cb=row.querySelector('input[type="checkbox"]'); cb.addEventListener("change", checkProgress);
+    const txt=row.querySelector('input[type="text"]'); txt.addEventListener("change", ()=>{ const arr=loadItems(); const f=arr.find(x=>x.id===it.id); if(f){f.text=txt.value; saveItems(arr);} });
+    row.querySelector('.del').onclick=()=>{ const arr=loadItems().filter(x=>x.id!==it.id); saveItems(arr); renderList(); checkProgress(); };
+    row.querySelector('.up').onclick=()=>moveItem(it.id,-1);
+    row.querySelector('.dn').onclick=()=>moveItem(it.id, 1);
+    list.appendChild(row);
+  });
+}
+function addItem(){ const t=$("#newItem").value.trim(); if(!t)return; const arr=loadItems(); arr.push({id:crypto.randomUUID(),text:t}); saveItems(arr); $("#newItem").value=""; renderList(); }
+function moveItem(id,dir){ const arr=loadItems(); const i=arr.findIndex(x=>x.id===id); if(i<0)return; const j=i+dir; if(j<0||j>=arr.length)return; [arr[i],arr[j]]=[arr[j],arr[i]]; saveItems(arr); renderList(); }
+
+/* ===== helpers ===== */
+function areAllChecked(){ return Array.from(document.querySelectorAll('.item input[type="checkbox"]')).every(c=>c.checked); }
+
+/* ===== run control ===== */
+async function startRun(){
+  // ユーザーのタップ処理内で実行されるため、AudioContextを有効化
+  await audioInitAndResume(); // ★ 変更箇所
+  // 開始時に安全のため全チェック解除
+  document.querySelectorAll('.item input[type="checkbox"]').forEach(c=>c.checked=false);
+
+  audioInit(); started=true; startAt=new Date(); alarmFired=false; cueFired={};
+  delayMode=false; delayPromptCount=0; nextDelayPromptAt=0; fiveMinWarned=false;
+  chime(); await requestWakeLock();
+  setFooterRunning();
+  updateBodyState();
+　showToast("支度を始めろ。…遅れぬように。");
+
+}
+function completeRun(){
+  document.querySelectorAll('.item input[type="checkbox"]').forEach(c=>c.checked=true);
+  checkProgress(true);
+}
+function cancelRun(){
+  showToast("仕切り直す。");
+  document.querySelectorAll('.item input[type="checkbox"]').forEach(c=>c.checked=false);
+  hardResetState();
+}
+function hardResetState(){
+  started=false; startAt=null; alarmFired=false; cueFired={}; rewardOn=false; delayMode=false; delayPromptCount=0; nextDelayPromptAt=0; fiveMinWarned=false;
+  releaseWakeLock();
+  const el=$("#remain"); el.textContent="--:--"; el.classList.remove("ok","warn","danger");
+  $("#pbar").style.width="0%";
+  setReward(false,true); // true=静かに（トースト出さない）
+  setFooterIdle();
+  updateBodyState();
+}
+
+
+/* ===== reward / progress dispatcher ===== */
+
+function checkProgress(fromCompleteBtn=false){
+const allDone = areAllChecked();
+if(!allDone){ return; }
+
+
+const dep=parseHM(loadDep()); if(!dep) return;
+const now=new Date(), goal=new Date(); goal.setHours(dep.h, dep.mi-5, 0, 0);
+const D=new Date(); D.setHours(dep.h,dep.mi,0,0);
+
+
+if(delayMode){
+    // 遅延モード中に完了した場合
+    showToast(pick(rewardMessages.late)); // 遅延からの挽回メッセージを提示
+    hardResetState();
+    return;
+  }
+  
+  // 💡 目標時間前/後でメッセージと演出を分岐
+  let msg;
+  if(now < goal){
+    // 目標時間（出発5分前）より早く完了
+    setReward(true); // 💡 ご褒美演出ON
+    msg = pick(rewardMessages.early); // 💡 早期完了メッセージ
+  }else{
+    // 目標時間後〜出発時刻までの間に完了
+    setReward(false, true); // ご褒美演出はOFF
+    msg = fromCompleteBtn ? "整った。出発まで待て。" : pick(rewardMessages.late); // 💡 通常完了 or 遅延挽回メッセージ
+  }
+
+  showToast(msg);
+}
+
+let lightCtx;
+let animFrame;
+const particleCount = 60; // 粒子の数 
+let particles = [];
+let isSpeaking = false; // (既存のanimateLight関数で使用されているため定義しておく)
+
+
+/* ===== ご褒美 ===== */
+let miniTimerId=null; // (削除せず、未使用として残す)
+
+function setReward(on, silent=false){
+  rewardOn = !!on;
+  if (on) {
+    startLightEffect();
+  } else {
+    stopLightEffect();
+  }
+    updateBodyState();
+  
+  if (rewardOn && !silent) {
+    try{ audioInit(); rewardSoundB(); }catch{}; 
+  }
+}
+
+function startLightEffect(){
+
+// lightCanvasの要素が存在しない場合を考慮し、確認を追加
+  const c=document.getElementById("lightCanvas");
+  if (!c) return; 
+
+  lightCtx=c.getContext("2d");
+  resizeCanvas();
+  window.addEventListener("resize",resizeCanvas);
+  initParticles();
+  
+  // 既にアニメーションが実行中の場合は停止してから再開
+  if (animFrame) cancelAnimationFrame(animFrame); 
+  animateLight();
+}
+
+
+function stopLightEffect(){cancelAnimationFrame(animFrame);}
+function resizeCanvas(){const c=document.getElementById("lightCanvas");c.width=innerWidth;c.height=innerHeight;}
+
+
+function initParticles(){
+  particles=[];
+  for(let i=0;i<particleCount;i++){
+    particles.push({
+      x: Math.random()*innerWidth,
+      y: innerHeight * (Math.random()*0.3 + 0.7), // 画面下部70%〜100%に集中
+      r: Math.random()*2+1,
+      o: Math.random()*0.5+0.3,
+      dx: (Math.random()-0.5)*0.4, // 左右の動き
+      dy: -1 * (Math.random()*0.9 + 0.2) // 常に上方向へゆっくり移動
+    });
+  }
+}
+
+function animateLight(){
+  const c=document.getElementById("lightCanvas");
+  lightCtx.clearRect(0,0,c.width,c.height);
+  
+  for(let i = 0; i < particles.length; i++){
+    const p = particles[i];
+    lightCtx.beginPath();lightCtx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    lightCtx.fillStyle=`rgba(240, 248, 255,${p.o})`; 
+    lightCtx.fill();
+    
+    p.x+=p.dx;
+    p.y+=p.dy;
+    
+    // 画面上部から出たら、画面下部で再生成
+    if(p.y < 0){
+      particles[i] = {
+        x: Math.random()*innerWidth,
+        y: innerHeight, // 画面下に配置
+        r: Math.random()*1+1,
+        o: Math.random()*0.5+0.3,
+        dx: (Math.random()-0.5)*0.2,
+        dy: -1 * (Math.random()*0.5 + 0.2)
+      };
+    }
+  }
+  animFrame=requestAnimationFrame(animateLight);
+}
+
+
+
+/* ===== cues（分前） ===== */
+function parseCues(){ const s=loadCues(); cueList = s.split(",").map(x=>+x.trim()).filter(n=>!isNaN(n)&&n>0).sort((a,b)=>b-a); }
+function maybeFireCues(){
+  if(!started || delayMode) return;
+  const dep=parseHM(loadDep()); if(!dep) return;
+  const now=new Date(); const D=new Date(); D.setHours(dep.h,dep.mi,0,0);
+  const leftMin = Math.ceil((D-now)/60000);
+  cueList.forEach(m=>{
+    if(leftMin<=m && !cueFired[m]){
+      cueFired[m]=true; speakCue(m);
+    }
+  });
+}
+function speakCue(m){
+  const lines=[ "急くな、手を動かせ。", "さて、次は…。", "あと少し。そろそろ詰めろ。", "これで最後だ。" ];
+  showToast(`${m}分前：${lines[Math.floor(Math.random()*lines.length)]}`);
+  try{chime()}catch{}
+}
+
+/* ===== alarm（出発） & 遅延突入 ===== */
+function maybeFireAlarm(){
+  if(!started) return;
+  const dep=parseHM(loadDep()); if(!dep) return;
+  const now=new Date(); const D=new Date(); D.setHours(dep.h,dep.mi,0,0);
+
+  if(now < D) return;
+
+  const allDone = areAllChecked();
+
+  if(!delayMode){
+    if(allDone){
+      if(!alarmFired){ alarmFired=true;
+      try{audioInit(); alarm();}catch{}; 
+      sendAlarmNotification("朝坐 - 完了", "出陣の刻だ。"); // <--- 通知を追加
+      showToast("出陣の刻だ。"); }
+      hardResetState();
+    }else{
+      delayMode=true;
+      if(!alarmFired){ alarmFired=true; try{audioInit(); alarm();}catch{}
+      sendAlarmNotification("朝坐 - 遅延", "刻限を過ぎた。止まるな。"); 
+ }
+      delayPromptCount=0; nextDelayPromptAt=Date.now()+60*1000;
+      showToast("…遅れたな。だが、止まるな。");
+      updateBodyState(); // ← 背景を遅延色へ
+      // wakeLockは維持
+    }
+  }
+}
+
+/* ===== 遅延中の追加促し ===== */
+function maybeDelayPrompts(){
+  if(!delayMode || delayPromptCount>=3) return;
+  if(Date.now() >= nextDelayPromptAt){
+    const lines=[ "手を止めるな。", "荷をまとめろ。焦らず早く。", "遅れは悪ではない、放棄が悪だ。", "焦るな。" ];
+    showToast(lines[Math.floor(Math.random()*lines.length)]);
+    delayPromptCount++; nextDelayPromptAt += 60*1000;
+  }
+}
+
+/* ===== toast ===== */
+let toastTimer=null;
+function showToast(text){
+  const t=$("#toast"); t.textContent=text; clearTimeout(toastTimer);
+  t.classList.add("show");
+  toastTimer=setTimeout(()=>t.classList.remove("show"), 10000);
+}
+
+/* Service Worker 登録の追加 */
+if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js', { scope: './' }) .then((reg) => { console.log('Service Worker registered: ', reg); }) .catch((err) => { console.log('Service Worker registration failed: ', err); }); }); }
+
+
+</script>
+</body>
+</html>
